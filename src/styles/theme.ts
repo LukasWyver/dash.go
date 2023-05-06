@@ -29,11 +29,17 @@ export const theme = extendTheme({
       '300': '#FDCA40',
     },
   },
+
+  fonts: {
+    heading: 'Ubuntu',
+    body: 'Ubuntu',
+  },
+
   styles: {
     global: {
       body: {
         bg: 'gray.900',
-        color: 'secondary.300',
+        color: 'gray.50',
       },
     },
   },
