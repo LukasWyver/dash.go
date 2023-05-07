@@ -22,7 +22,7 @@ export function Input({ name, label, ...rest }: InputProps) {
         _hover={{
           bg: 'gray.900',
         }}
-        focusBorderColor="green.500"
+        focusBorderColor="pink.500"
         {...rest}
       />
     </FormControl>
