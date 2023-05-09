@@ -74,17 +74,17 @@ export default function Dashboard() {
         <SimpleGrid
           flex="1"
           gap="4"
-          minChildWidth={320}
+          minChildWidth={[300,320]}
           alignItems="flex-start"
         >
-          <Box p="8" pb="4" bg="gray.800" rounded={8}>
+          <Box p={["6","8"]} pb="4" bg="gray.800" rounded={8}>
             <Text fontSize="lg" mb="4">
               Inscritos da semana
             </Text>
             <Chart type="area" height={160} options={options} series={series} />
           </Box>
 
-          <Box p="8" pb="4" bg="gray.800" rounded={8}>
+          <Box p={["6","8"]} pb="4" bg="gray.800" rounded={8}>
             <Text fontSize="lg" mb="4">
               Taxa de abertura
             </Text>

@@ -5,10 +5,11 @@ export function Notifications() {
   return (
     <HStack
       py="1"
-      pr={["6","8"]}
-      mx={["6","8"]}
+      pl={["4","0"]}
+      pr={["4","6","8"]}
+      mx={["2","4","6","8"]}
       color="gray.300"
-      spacing={["6","8"]}
+      spacing={["2","4","6","8"]}
       borderRightWidth={1}
       borderColor="gray.700"
     >
