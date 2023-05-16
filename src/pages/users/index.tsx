@@ -21,9 +21,8 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { api } from '@/services/api';
-import { useQuery } from '@tanstack/react-query';
 import { RiAddLine, RiPencilLine, RiRefreshLine } from 'react-icons/ri';
+import { useUsers } from '@/services/hooks/useUsers';
 
 type User = {
   id: string;
@@ -33,29 +32,7 @@ type User = {
 };
 
 export default function UserList() {
-  const { data, isLoading, isFetching, refetch, error } = useQuery({
-    queryKey: ['users'],
-    queryFn: async () => {
-      // const response = await fetch('https://localhost:3000/api/users');
-      const { data } = await api.get('/users');
-      // const data = await response.json();
-      const users = data.users.map((user: User) => {
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-          }),
-        };
-      });
-
-      return users;
-    },
-    staleTime: 1000 * 5, // 5 segs
-  });
+  const { data, isLoading, isFetching, refetch, error } = useUsers();
 
   const isWideVersion = useBreakpointValue({
     base: false,
@@ -134,7 +111,7 @@ export default function UserList() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {data.map((user: User) => {
+                  {data?.map((user: User) => {
                     return (
                       <Tr key={user.id}>
                         <Td px={['2', '4', '6']}>
@@ -181,7 +158,7 @@ export default function UserList() {
                 </Tbody>
               </Table>
 
-              <Pagination />
+              <Pagination totalCountOfRegisters={200} currentPage={2} onPageChange={() => {}}/>
             </>
           )}
         </Box>
