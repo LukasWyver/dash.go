@@ -1,5 +1,5 @@
 import { api } from '@/services/api';
-import { useQuery } from '@tanstack/react-query';
+import { UseQueryOptions, useQuery } from '@tanstack/react-query';
 
 type User = {
   id: string;
@@ -8,30 +8,52 @@ type User = {
   createdAt: string;
 };
 
-export async function getUsers(): Promise<User[]>{
- // const response = await fetch('https://localhost:3000/api/users');
- const { data } = await api.get('/users');
- // const data = await response.json();
- const users = data.users.map((user: User) => {
-   return {
-     id: user.id,
-     name: user.name,
-     email: user.email,
-     createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
-       day: '2-digit',
-       month: 'long',
-       year: 'numeric',
-     }),
-   };
- });
+type GetUsersResponse = {
+  totalCount: number;
+  users: User[];
+};
 
- return users;
+export async function getUsers(page: number): Promise<GetUsersResponse> {
+  const { data, headers } = await api.get('/users', {
+    params: {
+      page,
+    },
+  });
+
+  const totalCount = Number(headers['x-total-count']);
+
+  const users = data.users.map((user: User) => {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }),
+    };
+  });
+
+  return {
+    users,
+    totalCount,
+  };
 }
 
-export function useUsers(){
+export function useUsers(
+  page: number,
+  options?: UseQueryOptions<
+    GetUsersResponse,
+    unknown,
+    GetUsersResponse,
+    ['users', number]
+  >
+) {
   return useQuery({
-    queryKey: ['users'],
-    queryFn: getUsers,
-    staleTime: 1000 * 5, // 5 segs
+    queryKey: ['users', page],
+    queryFn: () => getUsers(page),
+    staleTime: 1000 * 60 * 10, // 10 min
+    ...options,
   });
 }

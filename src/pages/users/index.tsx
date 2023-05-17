@@ -9,6 +9,7 @@ import {
   Heading,
   Icon,
   IconButton,
+  Link as ChakraLink,
   Spinner,
   Table,
   Tbody,
@@ -20,9 +21,12 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { RiAddLine, RiPencilLine, RiRefreshLine } from 'react-icons/ri';
-import { useUsers } from '@/services/hooks/useUsers';
+import { getUsers, useUsers } from '@/services/hooks/useUsers';
+import { queryClient } from '@/services/queryClient';
+import { api } from '@/services/api';
+import { GetServerSideProps } from 'next';
 
 type User = {
   id: string;
@@ -31,15 +35,28 @@ type User = {
   createdAt: string;
 };
 
-export default function UserList() {
-  const { data, isLoading, isFetching, refetch, error } = useUsers();
+export default function UserList({ users }) {
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, isFetching, refetch, error } = useUsers(page, {
+    initialData: users,
+  });
 
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
   });
 
-  useEffect(() => {}, []);
+  async function handlePrefetchUser(userId: string) {
+    await queryClient.prefetchQuery({
+      queryKey: ['user', userId],
+      queryFn: async () => {
+        const response = await api.get(`/users/${userId}`);
+        return response.data;
+      },
+      staleTime: 1000 * 60 * 10, // 10 min
+    });
+  }
 
   return (
     <Box>
@@ -71,7 +88,7 @@ export default function UserList() {
                 variant="ghost"
                 colorScheme="whiteAlpha"
                 onClick={() => refetch()}
-                leftIcon={<Icon as={RiRefreshLine} fontSize="16"  />}
+                leftIcon={<Icon as={RiRefreshLine} fontSize="16" />}
               >
                 Recarregar
               </Button>
@@ -111,7 +128,7 @@ export default function UserList() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {data?.map((user: User) => {
+                  {data?.users.map((user: User) => {
                     return (
                       <Tr key={user.id}>
                         <Td px={['2', '4', '6']}>
@@ -119,7 +136,14 @@ export default function UserList() {
                         </Td>
                         <Td px={['2', '4', '6']}>
                           <Box>
-                            <Text fontWeight="bold">{user.name}</Text>
+                            <Link href="">
+                              <ChakraLink
+                                color="purple.400"
+                                onMouseEnter={() => handlePrefetchUser(user.id)}
+                              >
+                                <Text fontWeight="bold">{user.name}</Text>
+                              </ChakraLink>
+                            </Link>
                             <Text fontSize="small" color="gray.300">
                               {user.email}
                             </Text>
@@ -158,11 +182,25 @@ export default function UserList() {
                 </Tbody>
               </Table>
 
-              <Pagination totalCountOfRegisters={200} currentPage={2} onPageChange={() => {}}/>
+              <Pagination
+                totalCountOfRegisters={data.totalCount}
+                currentPage={page}
+                onPageChange={setPage}
+              />
             </>
           )}
         </Box>
       </Flex>
     </Box>
   );
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const { users, totalCount} = await getUsers(1)
+
+  return {
+    props: {
+      users
+    }
+  }
 }
